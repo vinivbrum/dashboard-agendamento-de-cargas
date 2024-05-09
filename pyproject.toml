@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "dash-cargas-agendadas"
+version = "0.1.0"
+description = ""
+authors = ["Vinivbrum <vinivbrum@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+streamlit = "^1.34.0"
+pandas = "^2.2.2"
+openpyxl = "^3.1.2"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
