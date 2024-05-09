@@ -1,15 +1,13 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
+import numpy as np
 
 #start a streamlit app and create a imput widget
 st.write('Cargas agendadas')
-upload = st.file_uploader("Escolha um arquivo Excel", type="xlsx")
-wb = None
-if upload == None:
-    pass
-else: 
-    wb = pd.read_excel(upload, sheet_name='COMPRAS',skiprows=2,header=0)
-
+upload = "Pedidos Semanal.xlsx"
+wb = pd.read_excel(upload, sheet_name='COMPRAS',skiprows=2,header=0)
+_today= np.datetime64(datetime.today().strftime('%Y-%m-%d'))
 
 def transform(df):
     df.drop(columns=['shelflife','Estoque'],inplace=True)
@@ -17,7 +15,7 @@ def transform(df):
     df.drop(columns='Status',inplace=True)
     colums_list = df.columns.to_list()
     dias = colums_list[3:14]
-    df = df.melt(id_vars=['Responsável','Item','BASE ID'],value_vars=dias,var_name='Pedido',value_name='Valor',ignore_index=True )
+    df = df.melt(id_vars=['Responsável','BASE ID','Item'],value_vars=dias,var_name='Pedido',value_name='Valor',ignore_index=True )
     df = df.dropna(subset=['Valor'])
     def separar_dia(dia):
         dia = dia.split(' ')
@@ -31,16 +29,29 @@ def transform(df):
         return data
     df['Data'] = df['Pedido'].apply(separar_data)
     df['Data'] = pd.to_datetime(df['Data'], format='%d/%m/%Y')
-    df = df.sort_values(by=['Responsável','Data','Item'],ascending=True)
+    df = df.sort_values(by=['Data','Responsável','Item'],ascending=True)
+    df = df[df['Data'] >= _today]
     return df
 
 
-    
-#create filters for this dataframe in streamlit
+df = transform(wb)
+
+# Filtro para Responsável
+responsavel_filtro = st.sidebar.multiselect('Filtrar por Responsável', df['Responsável'].unique(),default = df['Responsável'].unique())
+data_filtro = st.sidebar.multiselect('Data', df['Data'].unique(),default = df['Data'].min())
 
 
 
-# write dataframe to streamlit
+# Aplicar filtro de datas
+filtered_df = df[df['Responsável'].isin(responsavel_filtro) & df['Data'].isin(data_filtro)]
 
+st.dataframe(
+    filtered_df,
+    column_config={
+        "Data": st.column_config.DatetimeColumn("Data", format="DD/MM/YY"),
+        "Valor": st.column_config.NumberColumn("Valor", format = '%d', step = 1),
+        "Pedido" : None
+    },
+    hide_index=True,
+)
 
-#create filters for this dataframe in streamlit
