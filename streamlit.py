@@ -38,7 +38,7 @@ df = transform(wb)
 
 # Filtro para Responsável
 responsavel_filtro = st.sidebar.multiselect('Filtrar por Responsável', df['Responsável'].unique(),default = df['Responsável'].unique())
-data_filtro = st.sidebar.multiselect('Data', df['Data'].unique(),default = df['Data'].min())
+data_filtro = st.sidebar.multiselect('Data', df['Data'].unique(),default = _today +1 , format_func=lambda x: x.strftime('%d/%m/%Y'))
 
 
 
@@ -47,10 +47,14 @@ filtered_df = df[df['Responsável'].isin(responsavel_filtro) & df['Data'].isin(d
 
 st.dataframe(
     filtered_df,
+    width  = 1000,
+    height  = 1000,
     column_config={
         "Data": st.column_config.DatetimeColumn("Data", format="DD/MM/YY"),
         "Valor": st.column_config.NumberColumn("Valor", format = '%d', step = 1),
-        "Pedido" : None
+        "Pedido" : None,
+        "Item" : st.column_config.Column(width = 'medium')
+        
     },
     hide_index=True,
 )
